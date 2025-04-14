@@ -136,10 +136,10 @@ export default function CalendarPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <TabsContent value="month" className="md:col-span-2 mt-0">
+          <div className="grid gap-4 md:grid-cols-7">
+            <TabsContent value="month" className="md:col-span-5 mt-0">
               <Card>
-                <CardContent className="p-4">
+                <CardContent className="p-6">
                   <FullCalendar
                     plugins={[dayGridPlugin]}
                     initialView="dayGridMonth"
@@ -245,9 +245,9 @@ export default function CalendarPage() {
               </Card>
             </TabsContent>
 
-            <Card className="h-fit">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
+            <Card className="md:col-span-2 h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">
                   {selectedDate ? formatDate(selectedDate) : "Today's"} Renewals
                 </CardTitle>
               </CardHeader>
