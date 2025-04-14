@@ -12,7 +12,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { isToday, isSameDay, format } from "date-fns";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import { EventClickArg } from '@fullcalendar/core';
+import { EventClickArg, DatesSetArg } from '@fullcalendar/core';
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
