@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
-import { addMonths, isToday, isSameDay, isWithinInterval, format } from "date-fns";
+import { isToday, isSameDay, format } from "date-fns";
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
