@@ -90,7 +90,7 @@ export default function Sidebar() {
             <span className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
               <Clock className="w-6 h-6 text-white" />
             </span>
-            <span className="text-xl font-bold">RenewalTrack</span>
+            <span className="text-xl font-bold">ReQurr</span>
           </Link>
           {isMobile && (
             <button
