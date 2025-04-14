@@ -26,6 +26,16 @@ import { useAuth } from "./lib/auth"; // Assumed location for useAuth hook
 
 
 function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AuthenticatedApp />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+function AuthenticatedApp() {
   const auth = useAuth();
   const [location] = useLocation();
 
@@ -36,9 +46,7 @@ function App() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex bg-slate-50">
           {auth.isAuthenticated && <Sidebar />}
           <div className="flex-1 flex flex-col">
             <Header />
@@ -70,8 +78,6 @@ function App() {
             </main>
           </div>
         </div>
-      </AuthProvider>
-    </QueryClientProvider>
   );
 }
 
