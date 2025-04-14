@@ -1,3 +1,26 @@
+
+import { useAuth } from "@/lib/auth";
+
+function LogoutButton() {
+  const auth = useAuth();
+  
+  const handleLogout = () => {
+    auth.logout();
+    window.location.href = '/login';
+  };
+
+  return (
+    <button
+      type="button"
+      className="p-2 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none"
+      onClick={handleLogout}
+    >
+      <LogOut className="w-5 h-5" />
+    </button>
+  );
+}
+
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -117,17 +140,7 @@ export default function Sidebar() {
               <p className="text-sm font-medium">Alex Johnson</p>
               <p className="text-xs text-gray-500 truncate">admin@renewaltrack.com</p>
             </div>
-            <button
-              type="button"
-              className="p-2 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none"
-              onClick={() => {
-                const auth = useAuth();
-                auth.logout();
-                window.location.href = '/login';
-              }}
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <LogoutButton />
           </div>
         </div>
       </aside>
