@@ -12,7 +12,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { isToday, isSameDay, format } from "date-fns";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import { EventClickArg, DatesSetArg } from '@fullcalendar/core';
+import { EventClickArg } from '@fullcalendar/core';
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -146,50 +146,34 @@ export default function CalendarPage() {
                     headerToolbar={false}
                     initialDate={currentMonth}
                     height="auto"
+                    eventDisplay="block"
+                    eventTimeFormat={{
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      meridiem: 'short'
+                    }}
+                    dayMaxEventRows={3}
                     events={renewals.map(renewal => {
-                      // Determine the calendar event color based on renewal status
-                      let color = '#3B82F6'; // blue for default
+                      // Simple color coding
+                      let color;
                       if (renewal.isPaid) {
                         color = '#10B981'; // green for paid
+                      } else if (new Date(renewal.endDate) < new Date()) {
+                        color = '#EF4444'; // red for overdue
                       } else {
-                        const today = new Date();
-                        const endDate = new Date(renewal.endDate);
-                        if (endDate < today) {
-                          color = '#EF4444'; // red for overdue
-                        } else {
-                          const daysUntilDue = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                          if (daysUntilDue <= 7) {
-                            color = '#EF4444'; // red for due soon (within 7 days)
-                          } else if (daysUntilDue <= 15) {
-                            color = '#F59E0B'; // yellow for due soon (within 15 days)
-                          }
-                        }
+                        color = '#3B82F6'; // blue for upcoming
                       }
                       
                       return {
                         id: renewal.id.toString(),
-                        title: `${renewal.client.name} - ${renewal.service.name}`,
+                        title: renewal.client.name,
                         start: renewal.startDate,
                         end: renewal.endDate,
-                        color: color,
-                        extendedProps: {
-                          clientId: renewal.clientId,
-                          serviceId: renewal.serviceId,
-                          amount: renewal.amount,
-                          isPaid: renewal.isPaid,
-                          notificationSent: renewal.notificationSent
-                        }
+                        color: color
                       };
                     })}
                     eventClick={(info) => {
-                      // When an event is clicked, set the selected date to the event's start date
                       setSelectedDate(new Date(info.event.start || new Date()));
-                    }}
-                    datesSet={(info) => {
-                      // Update the current month when navigating
-                      if (info.view.currentStart) {
-                        setCurrentMonth(info.view.currentStart);
-                      }
                     }}
                   />
                 </CardContent>
