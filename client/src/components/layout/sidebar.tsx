@@ -120,6 +120,11 @@ export default function Sidebar() {
             <button
               type="button"
               className="p-2 text-gray-400 bg-white rounded-full hover:text-gray-500 focus:outline-none"
+              onClick={() => {
+                const auth = useAuth();
+                auth.logout();
+                window.location.href = '/login';
+              }}
             >
               <LogOut className="w-5 h-5" />
             </button>
