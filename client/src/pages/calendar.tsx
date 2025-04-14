@@ -18,7 +18,7 @@ export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [view, setView] = useState<"month" | "list">("month");
-  
+
   const { data: renewals = [], isLoading } = useQuery<RenewalWithRelations[]>({
     queryKey: ["/api/renewals?withRelations=true"],
   });
@@ -40,7 +40,7 @@ export default function CalendarPage() {
     return renewals.filter(renewal => {
       const startDate = new Date(renewal.startDate);
       const endDate = new Date(renewal.endDate);
-      
+
       // Check if the day is the start date, end date, or in between
       return isSameDay(day, startDate) || 
              isSameDay(day, endDate) || 
@@ -56,33 +56,33 @@ export default function CalendarPage() {
     if (renewal.isPaid) {
       return "bg-green-100 text-green-800 border-green-200";
     }
-    
+
     const today = new Date();
     const endDate = new Date(renewal.endDate);
-    
+
     if (endDate < today) {
       return "bg-red-100 text-red-800 border-red-200";
     }
-    
+
     const daysUntilDue = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (daysUntilDue <= 7) {
       return "bg-red-100 text-red-800 border-red-200";
     }
-    
+
     if (daysUntilDue <= 15) {
       return "bg-yellow-100 text-yellow-800 border-yellow-200";
     }
-    
+
     return "bg-blue-100 text-blue-800 border-blue-200";
   };
 
   // Custom renderer for calendar days
   const renderDay = (day: Date) => {
     const dayRenewals = getDayRenewals(day);
-    
+
     if (dayRenewals.length === 0) return null;
-    
+
     // Classify renewals by status
     const hasPaid = dayRenewals.some(r => r.isPaid);
     const hasOverdue = dayRenewals.some(r => {
@@ -94,7 +94,7 @@ export default function CalendarPage() {
       const daysUntil = Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
       return !r.isPaid && daysUntil <= 15 && daysUntil > 0;
     });
-    
+
     return (
       <div className="flex gap-1 flex-col items-center mt-1">
         {hasOverdue && <div className="w-2 h-2 rounded-full bg-red-500"></div>}
@@ -163,12 +163,12 @@ export default function CalendarPage() {
                       } else {
                         color = '#3B82F6'; // blue for upcoming
                       }
-                      
+
                       return {
                         id: renewal.id.toString(),
                         title: renewal.client.name,
-                        start: renewal.startDate,
-                        end: renewal.endDate,
+                        start: renewal.endDate,
+                        allDay: true,
                         color: color
                       };
                     })}
@@ -282,7 +282,7 @@ export default function CalendarPage() {
                     ))}
                   </div>
                 )}
-                
+
                 <div className="mt-6 border-t pt-4">
                   <h3 className="font-medium text-sm mb-2">Legend</h3>
                   <div className="space-y-2 text-xs">
