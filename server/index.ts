@@ -39,17 +39,25 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Test database connection and initialize tables
+  // Test database connection and initialize tables with timeout protection
   try {
+    log("Testing database connection...", "database");
     const connected = await testConnection();
     if (connected) {
-      log("Database connection successful");
-      await initializeDatabase();
+      log("Database connection successful", "database");
+      try {
+        await initializeDatabase();
+        log("Database initialization completed successfully", "database");
+      } catch (dbInitError) {
+        const errorMsg = dbInitError instanceof Error ? dbInitError.message : String(dbInitError);
+        log(`Failed to initialize database: ${errorMsg}. Using in-memory storage.`, "database");
+      }
     } else {
-      log("WARNING: Could not connect to the database. Using in-memory storage.");
+      log("WARNING: Could not connect to the database. Using in-memory storage.", "database");
     }
   } catch (error) {
-    log(`Database error: ${error instanceof Error ? error.message : String(error)}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    log(`Database connection error: ${errorMsg}`, "database");
   }
 
   const server = await registerRoutes(app);

@@ -1,144 +1,177 @@
+import { log } from './vite';
 import { db } from './db';
 
-// Function to create the database tables if they don't exist
 export async function initializeDatabase() {
   try {
-    console.log('Initializing database...');
+    log("Starting database initialization...", "database");
     
-    // Create clients table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS clients (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL,
-        phone VARCHAR(20),
-        company VARCHAR(100),
-        address TEXT,
-        gst VARCHAR(20),
-        notes TEXT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Clients table created or already exists');
+    // Create tables if they don't exist
+    await createTablesIfNotExist();
     
-    // Create services table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS services (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        description TEXT,
-        defaultPrice DECIMAL(10, 2),
-        defaultDuration INT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Services table created or already exists');
+    // Check if the database has sample data
+    const [countResult] = await db.query<[{ count: number }]>('SELECT COUNT(*) as count FROM clients');
     
-    // Create renewals table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS renewals (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        clientId INT NOT NULL,
-        serviceId INT NOT NULL,
-        startDate DATE NOT NULL,
-        endDate DATE NOT NULL,
-        amount DECIMAL(10, 2) NOT NULL,
-        isPaid BOOLEAN DEFAULT FALSE,
-        isNotified BOOLEAN DEFAULT FALSE,
-        notes TEXT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (clientId) REFERENCES clients(id),
-        FOREIGN KEY (serviceId) REFERENCES services(id)
-      )
-    `);
-    console.log('Renewals table created or already exists');
-    
-    // Create activities table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS activities (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        type VARCHAR(50) NOT NULL,
-        description TEXT NOT NULL,
-        metadata TEXT,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Activities table created or already exists');
-    
-    console.log('Database initialization completed');
-    
-    // Check if sample data needs to be inserted
-    const [clientCount] = await db.query('SELECT COUNT(*) as count FROM clients');
-    
-    if (clientCount.count === 0) {
-      console.log('No clients found, inserting sample data...');
+    if (countResult.count === 0) {
+      log("No data found in the database. Adding sample data...", "database");
       await insertSampleData();
+    } else {
+      log(`Database already has data (${countResult.count} clients found)`, "database");
     }
     
-    return true;
+    log("Database initialization completed", "database");
   } catch (error) {
-    console.error('Database initialization failed:', error);
-    return false;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log(`Error initializing database: ${errorMessage}`, "database");
+    throw error;
   }
 }
 
-// Function to insert sample data if needed
+async function createTablesIfNotExist() {
+  // Create clients table
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS clients (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      phone VARCHAR(50) NULL,
+      company VARCHAR(255) NULL,
+      address TEXT NULL,
+      gst VARCHAR(50) NULL,
+      notes TEXT NULL,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  
+  // Create services table
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS services (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT NULL,
+      defaultPrice DECIMAL(10, 2) NOT NULL,
+      defaultDuration INT NOT NULL,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  
+  // Create renewals table
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS renewals (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      clientId INT NOT NULL,
+      serviceId INT NOT NULL,
+      startDate DATE NOT NULL,
+      endDate DATE NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      isPaid BOOLEAN DEFAULT FALSE,
+      isNotified BOOLEAN DEFAULT FALSE,
+      notes TEXT NULL,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (clientId) REFERENCES clients(id),
+      FOREIGN KEY (serviceId) REFERENCES services(id)
+    )
+  `);
+  
+  // Create activities table
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS activities (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      type VARCHAR(50) NOT NULL,
+      description TEXT NOT NULL,
+      metadata TEXT NULL,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  
+  log("Database tables created or already exist", "database");
+}
+
 async function insertSampleData() {
-  try {
-    // Insert sample clients
+  // Function to format dates for MySQL
+  const formatDate = (date: Date): string => {
+    return date.toISOString().split('T')[0];
+  };
+
+  // Function to create a date relative to today
+  const createDate = (daysFromNow: number): Date => {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromNow);
+    return date;
+  };
+
+  // Insert clients
+  const clients = [
+    { name: "Acme Corporation", email: "contact@acme.com", phone: "555-1234", company: "Acme Corp", address: "123 Main St", gst: "ABC123456" },
+    { name: "TechSolutions Inc", email: "info@techsolutions.com", phone: "555-2345", company: "TechSolutions", address: "456 Tech Ave", gst: "XYZ789012" },
+    { name: "Global Media Group", email: "admin@globalmedia.com", phone: "555-3456", company: "Global Media", address: "789 Media Blvd", gst: "DEF345678" },
+    { name: "Retail Innovations", email: "support@retailinnovations.com", phone: "555-4567", company: "Retail Innovations", address: "321 Shop Lane", gst: "GHI901234" },
+    { name: "Healthcare Services", email: "info@healthcareservices.com", phone: "555-5678", company: "Healthcare Services", address: "654 Health Rd", gst: "JKL567890" }
+  ];
+  
+  for (const client of clients) {
     await db.query(`
-      INSERT INTO clients (name, email, phone, company, address, gst, notes) VALUES 
-      ('Global Tech Solutions', 'info@globaltechsolutions.com', '9876543210', 'Global Tech Solutions', '123 Tech Park, Bangalore', '29ABCDE1234F1Z5', 'Enterprise client'),
-      ('Acme Corp.', 'info@acmecorp.com', '8765432109', 'Acme Corporation', '456 Business Avenue, Mumbai', '27FGHIJ5678K2Z6', 'Regular client'),
-      ('Sunshine Industries', 'contact@sunshineindustries.com', '7654321098', 'Sunshine Industries Ltd.', '789 Industrial Estate, Delhi', '07KLMNO9012P3Z7', 'Manufacturing sector'),
-      ('TechNova Solutions', 'support@technovasolutions.com', '6543210987', 'TechNova Solutions Pvt Ltd', '101 Innovation Hub, Hyderabad', '36PQRST3456U4Z8', 'IT service provider'),
-      ('XYZ Enterprises', 'info@xyzenterprises.com', '5432109876', 'XYZ Enterprises', '202 Corporate Park, Chennai', '33UVWXY7890Z5Z9', 'Retail client')
-    `);
-    
-    // Insert sample services
-    await db.query(`
-      INSERT INTO services (name, description, defaultPrice, defaultDuration) VALUES 
-      ('Website AMC', 'Annual maintenance contract for website', 24000, 12),
-      ('Domain Renewal', 'Domain name registration renewal', 1200, 12),
-      ('Hosting', 'Web hosting services', 8400, 12),
-      ('Business Email', 'Professional email services', 6500, 12)
-    `);
-    
-    // Insert sample renewals with realistic dates
-    const today = new Date();
-    const createDateString = (daysFromNow: number): string => {
-      const date = new Date(today);
-      date.setDate(date.getDate() + daysFromNow);
-      return date.toISOString().split('T')[0];
-    };
-    
-    await db.query(`
-      INSERT INTO renewals (clientId, serviceId, startDate, endDate, amount, isPaid, isNotified, notes) VALUES 
-      (1, 2, ?, ?, 1200, 0, 1, 'Domain renewal for globaltechsolutions.com'),
-      (2, 1, ?, ?, 24000, 0, 0, 'Annual website maintenance'),
-      (3, 4, ?, ?, 6500, 0, 0, '5 business email accounts'),
-      (5, 3, ?, ?, 8400, 0, 0, 'Web hosting renewal'),
-      (4, 1, ?, ?, 12500, 1, 1, 'Half-yearly website maintenance')
-    `, [
-      createDateString(-335), createDateString(30),  // Client 1, Service 2
-      createDateString(-355), createDateString(10),  // Client 2, Service 1
-      createDateString(-345), createDateString(15),  // Client 3, Service 4
-      createDateString(-340), createDateString(25),  // Client 5, Service 3
-      createDateString(-180), createDateString(180)  // Client 4, Service 1
-    ]);
-    
-    // Insert sample activities
-    await db.query(`
-      INSERT INTO activities (type, description, metadata) VALUES 
-      ('payment_received', 'Payment of ₹12,500 received from TechNova Solutions for Website AMC', '{"clientId": 4, "amount": 12500, "serviceId": 1}'),
-      ('client_added', 'Added XYZ Enterprises to the client list', '{"clientId": 5}'),
-      ('renewal_reminder', 'Sent reminder email to Global Tech Solutions about Domain Renewal due soon', '{"clientId": 1, "renewalId": 1}'),
-      ('service_updated', 'Updated pricing for Business Email Hosting service', '{"serviceId": 4}')
-    `);
-    
-    console.log('Sample data inserted successfully');
-  } catch (error) {
-    console.error('Error inserting sample data:', error);
-    throw error;
+      INSERT INTO clients (name, email, phone, company, address, gst)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [client.name, client.email, client.phone, client.company, client.address, client.gst]);
   }
+  
+  // Insert services
+  const services = [
+    { name: "Website Hosting", description: "Annual web hosting service", defaultPrice: 199.99, defaultDuration: 365 },
+    { name: "Domain Registration", description: "Domain name registration service", defaultPrice: 14.99, defaultDuration: 365 },
+    { name: "SEO Package", description: "Monthly SEO optimization service", defaultPrice: 299.99, defaultDuration: 30 },
+    { name: "Maintenance Contract", description: "Quarterly website maintenance", defaultPrice: 449.99, defaultDuration: 90 }
+  ];
+  
+  for (const service of services) {
+    await db.query(`
+      INSERT INTO services (name, description, defaultPrice, defaultDuration)
+      VALUES (?, ?, ?, ?)
+    `, [service.name, service.description, service.defaultPrice, service.defaultDuration]);
+  }
+  
+  // Insert renewals (some past, some upcoming, some overdue)
+  const renewals = [
+    { clientId: 1, serviceId: 1, startDate: createDate(-365), endDate: createDate(15), amount: 199.99, isPaid: false, notes: "Annual hosting renewal" },
+    { clientId: 1, serviceId: 2, startDate: createDate(-365), endDate: createDate(30), amount: 14.99, isPaid: true, notes: "Domain renewal" },
+    { clientId: 2, serviceId: 3, startDate: createDate(-30), endDate: createDate(0), amount: 299.99, isPaid: false, notes: "Monthly SEO service" },
+    { clientId: 3, serviceId: 1, startDate: createDate(-365), endDate: createDate(-15), amount: 199.99, isPaid: false, notes: "Overdue hosting renewal" },
+    { clientId: 4, serviceId: 4, startDate: createDate(-90), endDate: createDate(5), amount: 449.99, isPaid: false, notes: "Quarterly maintenance due soon" },
+    { clientId: 5, serviceId: 1, startDate: createDate(-365), endDate: createDate(45), amount: 199.99, isPaid: true, notes: "Hosting pre-paid" },
+    { clientId: 2, serviceId: 4, startDate: createDate(-90), endDate: createDate(-7), amount: 449.99, isPaid: true, notes: "Maintenance completed" },
+    { clientId: 3, serviceId: 3, startDate: createDate(-30), endDate: createDate(23), amount: 299.99, isPaid: false, notes: "Monthly SEO service" }
+  ];
+  
+  for (const renewal of renewals) {
+    await db.query(`
+      INSERT INTO renewals (clientId, serviceId, startDate, endDate, amount, isPaid, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [
+      renewal.clientId, 
+      renewal.serviceId, 
+      formatDate(renewal.startDate), 
+      formatDate(renewal.endDate), 
+      renewal.amount, 
+      renewal.isPaid ? 1 : 0,
+      renewal.notes
+    ]);
+  }
+  
+  // Insert activities
+  const activities = [
+    { type: "client_added", description: "New client Acme Corporation added", metadata: JSON.stringify({ clientId: 1 }) },
+    { type: "renewal_created", description: "Website Hosting renewal created for Acme Corporation", metadata: JSON.stringify({ renewalId: 1, clientId: 1, serviceId: 1 }) },
+    { type: "payment_received", description: "Payment received for Domain Registration", metadata: JSON.stringify({ renewalId: 2, clientId: 1, amount: 14.99 }) },
+    { type: "renewal_reminder", description: "Reminder sent for SEO Package renewal", metadata: JSON.stringify({ renewalId: 3, clientId: 2, serviceId: 3 }) },
+    { type: "renewal_overdue", description: "Website Hosting renewal is overdue for Global Media Group", metadata: JSON.stringify({ renewalId: 4, clientId: 3, serviceId: 1 }) }
+  ];
+  
+  for (const activity of activities) {
+    await db.query(`
+      INSERT INTO activities (type, description, metadata)
+      VALUES (?, ?, ?)
+    `, [activity.type, activity.description, activity.metadata]);
+  }
+  
+  log("Sample data inserted successfully", "database");
 }

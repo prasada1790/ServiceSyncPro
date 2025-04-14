@@ -18,9 +18,9 @@ const pool = mysql.createPool({
   password: config.password,
   database: config.database,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 5,
   queueLimit: 0,
-  connectTimeout: 10000 // 10 seconds connection timeout
+  connectTimeout: 5000 // 5 seconds connection timeout
 });
 
 // Helper function to execute SQL queries
@@ -35,16 +35,28 @@ async function query<T = any>(sql: string, params?: any[]): Promise<T> {
   }
 }
 
-// Testing database connection
+// Testing database connection with timeout
 export async function testConnection(): Promise<boolean> {
-  try {
-    await pool.execute('SELECT 1');
-    return true;
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    log(`Failed to connect to database: ${errorMessage}`, 'database');
-    return false;
-  }
+  return new Promise<boolean>((resolve) => {
+    // Set a timeout to reject the connection attempt
+    const timeout = setTimeout(() => {
+      log('Database connection timed out', 'database');
+      resolve(false);
+    }, 3000); // 3 second timeout
+    
+    // Try to connect
+    pool.execute('SELECT 1')
+      .then(() => {
+        clearTimeout(timeout);
+        resolve(true);
+      })
+      .catch((error) => {
+        clearTimeout(timeout);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        log(`Failed to connect to database: ${errorMessage}`, 'database');
+        resolve(false);
+      });
+  });
 }
 
 export const db = {
