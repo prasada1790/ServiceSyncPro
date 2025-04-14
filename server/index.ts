@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { initializeDatabase } from "./db-init";
+import { testConnection } from "./db";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +39,19 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Test database connection and initialize tables
+  try {
+    const connected = await testConnection();
+    if (connected) {
+      log("Database connection successful");
+      await initializeDatabase();
+    } else {
+      log("WARNING: Could not connect to the database. Using in-memory storage.");
+    }
+  } catch (error) {
+    log(`Database error: ${error.message}`);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

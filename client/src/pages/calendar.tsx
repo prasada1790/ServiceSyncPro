@@ -23,11 +23,15 @@ export default function CalendarPage() {
   });
 
   const handlePreviousMonth = () => {
-    setCurrentMonth(addMonths(currentMonth, -1));
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(newDate.getMonth() - 1);
+    setCurrentMonth(newDate);
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(addMonths(currentMonth, 1));
+    const newDate = new Date(currentMonth);
+    newDate.setMonth(newDate.getMonth() + 1);
+    setCurrentMonth(newDate);
   };
 
   // Transform renewals for the calendar view
@@ -135,18 +139,54 @@ export default function CalendarPage() {
             <TabsContent value="month" className="md:col-span-2 mt-0">
               <Card>
                 <CardContent className="p-4">
-                  <CalendarComponent
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    month={currentMonth}
-                    onMonthChange={setCurrentMonth}
-                    className="border-none"
-                    components={{
-                      Day: ({ date, ...props }) => {
-                        const dayContent = renderDay(date);
-                        return <div {...props}>{dayContent}</div>;
+                  <FullCalendar
+                    plugins={[dayGridPlugin]}
+                    initialView="dayGridMonth"
+                    headerToolbar={false}
+                    initialDate={currentMonth}
+                    height="auto"
+                    events={renewals.map(renewal => {
+                      // Determine the calendar event color based on renewal status
+                      let color = '#3B82F6'; // blue for default
+                      if (renewal.isPaid) {
+                        color = '#10B981'; // green for paid
+                      } else {
+                        const today = new Date();
+                        const endDate = new Date(renewal.endDate);
+                        if (endDate < today) {
+                          color = '#EF4444'; // red for overdue
+                        } else {
+                          const daysUntilDue = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                          if (daysUntilDue <= 7) {
+                            color = '#EF4444'; // red for due soon (within 7 days)
+                          } else if (daysUntilDue <= 15) {
+                            color = '#F59E0B'; // yellow for due soon (within 15 days)
+                          }
+                        }
                       }
+                      
+                      return {
+                        id: renewal.id.toString(),
+                        title: `${renewal.client.name} - ${renewal.service.name}`,
+                        start: renewal.startDate,
+                        end: renewal.endDate,
+                        color: color,
+                        extendedProps: {
+                          clientId: renewal.clientId,
+                          serviceId: renewal.serviceId,
+                          amount: renewal.amount,
+                          isPaid: renewal.isPaid,
+                          notificationSent: renewal.notificationSent
+                        }
+                      };
+                    })}
+                    eventClick={(info) => {
+                      // When an event is clicked, set the selected date to the event's start date
+                      setSelectedDate(new Date(info.event.start || new Date()));
+                    }}
+                    dateClick={(info) => {
+                      // When a date is clicked, set the selected date to that date
+                      setSelectedDate(new Date(info.date));
                     }}
                   />
                 </CardContent>

@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* FullCalendar customizations */
+.fc-daygrid-day-number {
+  color: hsl(var(--foreground));
+  text-decoration: none !important;
+}
+
+.fc-col-header-cell-cushion {
+  color: hsl(var(--foreground));
+  text-decoration: none !important;
+  font-weight: 500;
+}
+
+.fc-daygrid-day.fc-day-today {
+  background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+.fc .fc-button-primary {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.fc-event {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.fc-scrollgrid-sync-inner {
+  text-align: center;
+}
+
+.fc-view-harness {
+  background-color: hsl(var(--background));
+}
+
+.fc-col-header, .fc-daygrid-body, .fc-scrollgrid-sync-table {
+  width: 100% !important;
+}
+
+/* Responsive styles for calendar */
+@media (max-width: 640px) {
+  .fc-event {
+    font-size: 0.7em;
+  }
+  
+  .fc-header-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
