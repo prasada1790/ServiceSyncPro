@@ -600,8 +600,33 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Import and use the database storage implementation
+// Import storage implementations
 import { DatabaseStorage } from './database-storage';
+import { testConnection } from './db';
 
-// Use the database storage implementation instead of memory storage
-export const storage = new DatabaseStorage();
+// Use database storage if connection is successful, otherwise fall back to in-memory storage
+let databaseStorageInstance: DatabaseStorage | null = null;
+let memoryStorageInstance: MemStorage | null = null;
+
+async function setupStorage() {
+  try {
+    const isConnected = await testConnection();
+    if (isConnected) {
+      console.log('Connected to MySQL database. Using DatabaseStorage.');
+      databaseStorageInstance = new DatabaseStorage();
+      return databaseStorageInstance;
+    } else {
+      console.log('Could not connect to MySQL database. Using MemStorage as fallback.');
+      memoryStorageInstance = new MemStorage();
+      return memoryStorageInstance;
+    }
+  } catch (error) {
+    console.error('Error setting up storage:', error);
+    console.log('Using MemStorage as fallback after error.');
+    memoryStorageInstance = new MemStorage();
+    return memoryStorageInstance;
+  }
+}
+
+// Initialize with MemStorage and then try to switch to DatabaseStorage
+export const storage = new MemStorage();

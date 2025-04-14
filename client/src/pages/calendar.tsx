@@ -12,6 +12,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { isToday, isSameDay, format } from "date-fns";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import { DateClickArg, EventClickArg } from '@fullcalendar/core';
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -184,9 +185,11 @@ export default function CalendarPage() {
                       // When an event is clicked, set the selected date to the event's start date
                       setSelectedDate(new Date(info.event.start || new Date()));
                     }}
-                    dateClick={(info) => {
-                      // When a date is clicked, set the selected date to that date
-                      setSelectedDate(new Date(info.date));
+                    datesSet={(info) => {
+                      // Update the current month when navigating
+                      if (info.view.currentStart) {
+                        setCurrentMonth(info.view.currentStart);
+                      }
                     }}
                   />
                 </CardContent>

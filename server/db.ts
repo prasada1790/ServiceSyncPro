@@ -10,12 +10,17 @@ const config = {
   database: process.env.PGDATABASE || 'u856729253_renew',
 };
 
-// Create a connection pool
+// Create a connection pool with more specific options
 const pool = mysql.createPool({
-  ...config,
+  host: config.host,
+  port: config.port,
+  user: config.user,
+  password: config.password,
+  database: config.database,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 10000 // 10 seconds connection timeout
 });
 
 // Helper function to execute SQL queries
@@ -24,7 +29,8 @@ async function query<T = any>(sql: string, params?: any[]): Promise<T> {
     const [rows] = await pool.execute(sql, params);
     return rows as T;
   } catch (error) {
-    log(`Database error: ${error.message}`, 'database');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log(`Database error: ${errorMessage}`, 'database');
     throw error;
   }
 }
@@ -32,10 +38,11 @@ async function query<T = any>(sql: string, params?: any[]): Promise<T> {
 // Testing database connection
 export async function testConnection(): Promise<boolean> {
   try {
-    await query('SELECT 1');
+    await pool.execute('SELECT 1');
     return true;
   } catch (error) {
-    log(`Failed to connect to database: ${error.message}`, 'database');
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    log(`Failed to connect to database: ${errorMessage}`, 'database');
     return false;
   }
 }

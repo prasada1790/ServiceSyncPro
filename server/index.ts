@@ -49,7 +49,7 @@ app.use((req, res, next) => {
       log("WARNING: Could not connect to the database. Using in-memory storage.");
     }
   } catch (error) {
-    log(`Database error: ${error.message}`);
+    log(`Database error: ${error instanceof Error ? error.message : String(error)}`);
   }
 
   const server = await registerRoutes(app);
