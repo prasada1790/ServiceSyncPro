@@ -81,8 +81,8 @@ export default function Sidebar() {
       <aside
         className={`${
           isOpen
-            ? "fixed inset-y-0 z-20 flex flex-col flex-shrink-0 w-64 h-screen overflow-hidden transition-all transform bg-white border-r shadow-lg lg:z-auto lg:static lg:shadow-none"
-            : "hidden lg:fixed lg:inset-y-0 lg:z-20 lg:flex lg:flex-col lg:flex-shrink-0 lg:w-64 lg:max-h-screen lg:overflow-hidden lg:transition-all lg:transform lg:bg-white lg:border-r lg:shadow-lg lg:z-auto lg:static lg:shadow-none"
+            ? "fixed inset-y-0 z-20 flex flex-col flex-shrink-0 w-64 min-h-screen bg-white border-r shadow-lg lg:z-auto lg:static lg:shadow-none"
+            : "hidden lg:fixed lg:inset-y-0 lg:z-20 lg:flex lg:flex-col lg:flex-shrink-0 lg:w-64 lg:min-h-screen lg:bg-white lg:border-r lg:shadow-lg lg:z-auto lg:static lg:shadow-none"
         }`}
       >
         <div className="flex items-center justify-between flex-shrink-0 p-4">
