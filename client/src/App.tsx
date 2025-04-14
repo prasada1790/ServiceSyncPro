@@ -19,7 +19,7 @@ import CalendarPage from "@/pages/calendar";
 import RevenuePage from "@/pages/revenue";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
-import { AuthProvider } from "./context/AuthContext"; // Added AuthProvider import
+import { AuthProvider } from "./lib/auth";
 
 
 function App() {
