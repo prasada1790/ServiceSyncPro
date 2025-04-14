@@ -49,11 +49,17 @@ export const renewals = pgTable("renewals", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertRenewalSchema = createInsertSchema(renewals).omit({
-  id: true,
-  createdAt: true,
-  notificationSent: true,
-});
+// Create and customize the renewal schema to handle string dates
+export const insertRenewalSchema = createInsertSchema(renewals)
+  .omit({
+    id: true,
+    createdAt: true,
+    notificationSent: true,
+  })
+  .extend({
+    startDate: z.string().or(z.date()),
+    endDate: z.string().or(z.date()),
+  });
 
 // Activity schema
 export const activities = pgTable("activities", {

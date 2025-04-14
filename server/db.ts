@@ -1,13 +1,13 @@
 import * as mysql from 'mysql2/promise';
 import { log } from './vite';
 
-// Configure database connection
+// Configure database connection with the provided credentials
 const config = {
-  host: process.env.PGHOST || '217.21.74.127',
-  port: parseInt(process.env.PGPORT || '3306'),
-  user: process.env.PGUSER || 'u856729253_renew_user',
-  password: process.env.PGPASSWORD || 'password',
-  database: process.env.PGDATABASE || 'u856729253_renew',
+  host: '217.21.74.127',
+  port: 3306,
+  user: 'u856729253_renew_user',
+  password: 'Coinage@1790', // Using the correct password
+  database: 'u856729253_renew'
 };
 
 // Create a connection pool with more specific options
