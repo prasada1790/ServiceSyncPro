@@ -137,8 +137,8 @@ export default function Sidebar() {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">Alex Johnson</p>
-              <p className="text-xs text-gray-500 truncate">admin@renewaltrack.com</p>
+              <p className="text-sm font-medium">Prasad Andure</p>
+              <p className="text-xs text-gray-500 truncate">Prasad@coinage.in</p>
             </div>
             <LogoutButton />
           </div>

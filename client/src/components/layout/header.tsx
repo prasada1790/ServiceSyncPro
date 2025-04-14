@@ -24,8 +24,6 @@ export default function Header() {
       setTitle("Revenue");
     } else if (location.startsWith("/settings")) {
       setTitle("Settings");
-    } else {
-      setTitle("Not Found");
     }
   }, [location]);
 
