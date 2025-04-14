@@ -105,17 +105,12 @@ export default function Dashboard() {
       </motion.div>
 
       <motion.div 
-        className="grid gap-6 lg:grid-cols-2"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
       >
         <RenewalsTable 
           renewals={stats?.upcomingRenewals || []} 
-          isLoading={isLoading} 
-        />
-        <ActivityFeed 
-          activities={stats?.recentActivities || []} 
           isLoading={isLoading} 
         />
       </motion.div>
